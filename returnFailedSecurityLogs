@@ -1,0 +1,18 @@
+$flog =Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"}
+$flog.count
+
+$flog| ForEach{
+$_.Message.ToString().Split("`n") | Select-String "Account Name:" | ForEach{
+    $_.ToString().Replace("`tAccount Name:`t", "")
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
+	
+$flog| ForEach{
+$_.Message.ToString().Split("`n") | Select-String "Caller Process Name:" | ForEach{
+    $_.ToString().Replace("`tCaller Process Name:`t", "")
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
+	
+	
+$flog| ForEach{
+$_.Message.ToString().Split("`n") | Select-String "Source Network Address:" | ForEach{
+    $_.ToString().Replace("`tSource Network Address:`t", "")
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
