@@ -1,18 +1,56 @@
-$flog =Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"}
-$flog.count
+write-output "starting"
 
-$flog| ForEach{
+$flog =Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"}
+$count = $flog.count
+
+write-output "got logs"
+
+#  |write-output "test.txt" (out-file)
+
+$output = $count.tostring() + " login attempts from "+$flog[$count-1].TimeGenerated+ " to " + $flog[0].TimeGenerated
+$output | out-file "securitylog.txt"
+
+Add-Content securitylog.txt ""
+Add-Content securitylog.txt ""
+
+Add-Content securitylog.txt "Account Name"
+
+$content = $flog| ForEach{
 $_.Message.ToString().Split("`n") | Select-String "Account Name:" | ForEach{
     $_.ToString().Replace("`tAccount Name:`t", "")
-    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name| Format-Table -Wrap -AutoSize #|out-file securitylog.txt
+
+$content = $content|out-string
+Add-Content securitylog.txt $content
+
+Add-Content securitylog.txt "Workstation Name (Source)"
+
+$content = $flog| ForEach{
+$_.Message.ToString().Split("`n") | Select-String "Workstation Name:" | ForEach{
+    $_.ToString().Replace("`tWorkstation Name:`t", "")
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name| Format-Table -Wrap -AutoSize #|out-file securitylog.txt
+
+$content = $content|out-string
+Add-Content securitylog.txt $content
+
+Add-Content securitylog.txt "Source Network Address"
 	
-$flog| ForEach{
-$_.Message.ToString().Split("`n") | Select-String "Caller Process Name:" | ForEach{
-    $_.ToString().Replace("`tCaller Process Name:`t", "")
-    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
-	
-	
-$flog| ForEach{
+$content = $flog| ForEach{
 $_.Message.ToString().Split("`n") | Select-String "Source Network Address:" | ForEach{
     $_.ToString().Replace("`tSource Network Address:`t", "")
-    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name| Format-Table -Wrap -AutoSize #|out-file securitylog.txt
+
+$content = $content|out-string
+Add-Content securitylog.txt $content
+
+Add-Content securitylog.txt "Caller Process Name"
+
+$content = $flog| ForEach{
+$_.Message.ToString().Split("`n") | Select-String "Caller Process Name:" | ForEach{
+    $_.ToString().Replace("`tCaller Process Name:`t", "")
+    }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name| Format-Table -Wrap -AutoSize #|out-file securitylog.txt
+
+$content = $content|out-string
+Add-Content securitylog.txt $content
+
+start-process notepad.exe securitylog.txt
