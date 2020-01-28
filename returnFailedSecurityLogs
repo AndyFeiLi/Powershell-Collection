@@ -1,6 +1,9 @@
 write-output "starting"
 
-$flog =Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"}
+$flog = Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"} 
+#Get-EventLog Security | Where-Object EventID -EQ 4625 | Select Message,TimeGenerated
+#Get-EventLog -LogName security|Where-Object {$_.entrytype -match "fail"} 
+
 $count = $flog.count
 
 write-output "got logs"
@@ -51,6 +54,12 @@ $_.Message.ToString().Split("`n") | Select-String "Caller Process Name:" | ForEa
     }} | Group-Object | Sort-Object -Property Count -descending| Select Count,Name| Format-Table -Wrap -AutoSize #|out-file securitylog.txt
 
 $content = $content|out-string
+Add-Content securitylog.txt $content
+
+
+Add-Content securitylog.txt "Latest Log"
+Add-Content securitylog.txt ""
+$content = $flog[0].message
 Add-Content securitylog.txt $content
 
 start-process notepad.exe securitylog.txt
